@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style type="text/css">
+		*{
+			margin: 0;
+			padding: 0;
+			outline: none;
+		}
+		#box {
+			width: 375px;
+			height: 568px;
+			margin: 50px auto;
+			border: 1px solid gray;
+		}
+		#box #control {
+			width: 100%;
+			height: 49px;
+			font-size: 0;
+		}
+		#box #control button {
+			width: 25%;
+			height: 100%;
+			background-color: red;
+			color: white;
+			/*float: left;*/
+		}
+		#box #control button.selected {
+            background-color: lightgray;
+            color: gray;
+		}
+		#box #content {
+			width: 100%;
+			height: auto;
+		}
+	</style>
+	<script type="text/javascript" src="jquery-1.8.3.min.js"></script>
+</head>
+<body>
+	<div id="box">
+		<!-- 导航控制 -->
+		<div id="control">
+			<button class="selected">全部</button>
+			<button>文字</button>
+			<button>图片</button>
+			<button>视频</button>
+		</div>
+		<!-- 内容部分 -->
+		<div id="content">
+			
+		</div>
+	</div>
+<!-- 内容模版 -->
+<!-- 1.文字模版 -->
+<script type="text/template" id="template1">
+	<p>@text@</p>
+</script>
+<!-- 2.图片模版 -->
+<script type="text/template" id="template2">
+   <div id="userInfo">
+   	  <img src="@header@" id="header">
+   	  <p>
+   	  	 <span>@username@</span>
+   	  	 <span>@passtime@</span>
+   	  </p>
+   	  <h3>@text@</h3>
+   </div>
+   <img src="@image@" id="contentImg">
+</script>
+<!-- 3.视频模版 -->
+<script type="text/template" id="template3">
+   <div id="userInfo">
+   	  <img src="@header@" id="header">
+   	  <p>
+   	  	 <span>@username@</span>
+   	  	 <span>@passtime@</span>
+   	  </p>
+   	  <h3>@text@</h3>
+   </div>
+   <video src="@video@" controls="controls" preload="preload"></video>
+</script>
+<script type="text/javascript">
+	var typeNum = 1;
+	getJsonFn(typeNum);
+	$("#box #control button").on("click",function(){
+		$(this).addClass("selected").siblings().removeClass("selected");
+	    // 将电极事件与展示内容作对应
+	    typeNum = $(this).index()+1;
+	    getJsonFn(typeNum);
+	})
+	function getJsonFn(typeNum){
+		$.get("https://www.apiopen.top/satinGodApi?type="+typeNum+"&page=1",function(data){
+             // 解析数据
+             console.log(data);
+             // 全部
+            if (typeNum==1) {
+             // 存储模版字符串的变量
+             var templateString = "";
+             // 获取全部数据
+             var dataArry = data.data;
+             for (var i = 0; i < dataArry.length; i++) {
+             	// 当判断数据类型为文本的时候，就去加载文本模版
+             	if (dataArry[i].type=="text") {
+                  templateString = $("#template1").html();
+             	}else if(dataArry[i].type=="image"){
+                  templateString = $("#template2").html();
+             	}else if(dataArry[i].type=="video"){
+                  templateString = $("#template3").html();
+             	}
+             	// 将数据和模版字符串进行绑定
+             var domSting = templeteFn(templateString,dataArry[i]);
+             $("#box #content").append(domSting);
+             }
+      
+            }
+	    })
+	}
+	function templeteFn(templateString,data){
+      return templateString.replace(/\@([a-z]+)\@/g,function(match,$1,index,string){
+           return data[$1];
+      });
+	}
+</script>
+
+
+
+</body>
+</html>
